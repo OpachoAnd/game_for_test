@@ -1,15 +1,14 @@
 import pandas as pd
 
-
 class ML_model:
-    data_df: None
-    results_df: None
-    metrics_df: None
+    data_df: pd.DataFrame
+    results_df: = pd.DataFrame()
+    metrics_df: = pd.DataFrame()
 
     def __init__(self):
-        self.data_df = None
-        self.results_df = None
-        self.metrics_df = None
+        self.data_df = pd.DataFrame()
+        self.results_df = pd.DataFrame()
+        self.metrics_df = pd.DataFrame()
 
         self.metrics_df = None
 
