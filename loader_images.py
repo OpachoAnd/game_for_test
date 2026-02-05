@@ -11,3 +11,9 @@ character_2_image = pygame.image.load('images/sprite_1.png')
 # Спрайт Лягушонка Аспи
 aspi_sit_image = pygame.image.load('images/aspi_sit.png')
 aspi_jump_image = pygame.image.load('images/aspi_jump.png')
+
+# Спрайт начального квадрата карты
+null_square_image = pygame.image.load('images/texture_grass.png')
+
+# Спрайт главного героя
+core_character_image = pygame.image.load('images/core_character.png')

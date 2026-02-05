@@ -1,80 +1,94 @@
 import gif_pygame
+import numpy as np
 import pygame
 
-from loader_images import bg_image, aspi_sit_image, aspi_jump_image
+from loader_images import bg_image, aspi_sit_image, aspi_jump_image, null_square_image, core_character_image
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 900, 900  # Размеры окна
 pygame.init()
 clock = pygame.time.Clock()
 
 # Окно
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Лягушонок Аспи и Тагаширская Ведьма')
 
-if __name__ == '__main__':
-    temp_cauldron = 50  # Температура котла Тагаширской Ведьмы
+# Фоновый экран
+bg_image = bg_image.convert_alpha()  # Конвертация в альфа канал
+bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))  # Изменение размера изображения
 
-    # Шрифт для Температуры
-    temp_font = pygame.font.Font(None, 30)
+# Квадратик нулевого поля
+null_sqr_image = null_square_image.convert_alpha()
+# Квадратик главного героя
+core_character_image = core_character_image.convert_alpha()
 
-    # Шрифт для Кнопки
-    button_font = pygame.font.Font(None, 18)
-    # Поверхность кнопки
-    button_surface = pygame.Surface((150, 50))
-    # Отображение текста на кнопке
-    text_button = button_font.render("Увеличить температуру", True, (255, 255, 255))
-    text_button_rect = text_button.get_rect(center=(button_surface.get_width() / 2,
-                                                    button_surface.get_height() / 2))
-    button_rect = pygame.Rect(10, 50, 50, 50)
+"""
+    0 - пустая клетка
+    1 - персонаж Аспи
+    2 - NPC
+    3 - река - перенесет в следующую клетку
+    4 - воспоминание - заставит вспомнить эпизод из жизни
+    5 - сундук - какие то предметы
+    6 - дремучие заросли - +1 ХП
+    7 - котёл Тагаширской ведьмы - переносит Аспи к Тагаширской ведьме
+    8 - Тагаширская ведьма 
+"""
+game_board = np.array([
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
+    [0, 2, 0,  0, 0, 0,  0, 0, 0],
 
-    # Фоновый экран
-    bg_image = bg_image.convert_alpha()  # Конвертация в альфа канал
-    bg_image = pygame.transform.scale(bg_image, (800, 600))  # Изменение размера изображения
+    [0, 6, 6,  4, 5, 0,  0, 0, 0],
+    [1, 0, 0,  0, 3, 0,  0, 0, 0],
+    [0, 0, 0,  0, 3, 0,  0, 0, 0],
 
-    # Спрайты и Ректы персонажей
-    aspi_sit_sprite = aspi_sit_image.convert_alpha()
-    aspi_sit_sprite = pygame.transform.scale(aspi_sit_sprite, (70, 70))
-    aspi_sit_rect_1 = aspi_sit_sprite.get_rect(center=(400, 285))
-    aspi_sit_rect_1 = pygame.Rect(aspi_sit_rect_1)
+    [0, 0, 0,  0, 3, 0,  0, 0, 0],
+    [0, 7, 0,  0, 2, 0,  0, 0, 0],
+    [0, 0, 0,  0, 0, 0,  0, 8, 0]])
 
-    aspi_jump_sprite = aspi_jump_image.convert_alpha()
-    aspi_jump_sprite = pygame.transform.scale(aspi_jump_sprite, (70, 70))
-    aspi_jump_rect_1 = aspi_jump_sprite.get_rect(center=(500, 250))
-    aspi_jump_rect_1 = pygame.Rect(aspi_jump_rect_1)
+game_board_mask = np.array([
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
 
-    # Анимация котла
-    gif = gif_pygame.load("images/анимация_котла.gif")
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
+    [1, 0, 0,  0, 0, 0,  0, 0, 0],
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
+
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
+    [0, 0, 0,  0, 0, 0,  0, 0, 0],
+    [0, 0, 0,  0, 0, 0,  0, 0, 0]])
+
+def draw_game_board():
+    rows, cols = game_board_mask.shape
+    size_square = min(WIDTH, HEIGHT) // max(rows, cols)
+    count_y = 0
+    count_x = 0
+    for i in range(0, rows):
+        for j in range(0, cols):
+            x, y = i * size_square, j * size_square
+            
+            if game_board_mask[j, i] == 0:
+                screen.blit(null_sqr_image, (x + count_x, y + count_y))
+            if game_board_mask[j, i] == 1:
+                screen.blit(core_character_image, (x + count_x, y + count_y))
+
+            count_y += 1
+        count_y = 0
+        count_x += 1
+
+
+if __name__ == "__main__":
+    draw_game_board()
 
     run = True
     while run:
+        clock.tick(60)  # Ограничение FPS до 60 кадров
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
 
-            # Проверяем событие нажатия кнопки мыши
-            if event.type == pygame.MOUSEBUTTONDOWN: #and event.button == 1:
-                # Вызовите функцию on_mouse_button_down()
-                if button_rect.collidepoint(event.pos):
-                    print("Button clicked!")
-                    temp_cauldron += 5
+        # Отрисовка игрового поля:
 
-
-        clock.tick(60)  # Ограничение FPS до 60 кадров
-        screen.fill((255, 255, 255))  # Заливка фона, цвет - белый
-
-        # Текст с температурой
-        temp_text = temp_font.render(f"Температура в котле {temp_cauldron} C°", True, (0, 0, 0))
-        # Текст на кнопке
-        button_surface.blit(text_button, text_button_rect)
-
-        # Рендер
-        if temp_cauldron >= 70:
-            screen.blit(aspi_jump_sprite, aspi_jump_rect_1)  # Размещение лягушонка Аспи высокая температура
-        else:
-            screen.blit(aspi_sit_sprite, aspi_sit_rect_1)  # Размещение лягушонка Аспи норм температура
-
-        gif.render(screen, (270, 200))
-        screen.blit(temp_text, (10, 10))
-        screen.blit(button_surface, button_rect)
-
-        pygame.display.update()  # Обновление сцены
+        # Обновление сцены
+        pygame.display.update()
